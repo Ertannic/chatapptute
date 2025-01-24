@@ -1,8 +1,9 @@
+import 'package:chatapptute/themes/light_mode.dart';
 import 'package:flutter/material.dart';
 import 'pages/login_page.dart';
 
 void main() {
-  runApp (const MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -10,9 +11,10 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: LoginPage(),
+      theme: lightMode,
     );
   }
 }
