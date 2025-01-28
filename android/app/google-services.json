@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "353775270960",
+    "project_id": "diplomchatapp",
+    "storage_bucket": "diplomchatapp.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:353775270960:android:79597831464d82192f01f5",
+        "android_client_info": {
+          "package_name": "com.example.chatapptute"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCIcrmTuVkUUxKvy5sxGtaxTSPhZPcWfTs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
