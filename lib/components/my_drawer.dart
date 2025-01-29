@@ -1,4 +1,4 @@
-import 'package:chatapptute/auth/auth_service.dart';
+import 'package:chatapptute/services/auth/auth_service.dart';
 import 'package:chatapptute/pages/settings_page.dart';
 import 'package:flutter/material.dart';
 
