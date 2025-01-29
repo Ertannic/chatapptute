@@ -5,7 +5,7 @@ import 'package:chatapptute/services/chat/chat_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-class ChatPage extends StatelessWidget {
+class ChatPage extends StatefulWidget {
   final String receiverEmail;
   final String receiverID;
 
@@ -15,6 +15,11 @@ class ChatPage extends StatelessWidget {
     required this.receiverID,
   });
 
+  @override
+  State<ChatPage> createState() => _ChatPageState();
+}
+
+class _ChatPageState extends State<ChatPage> {
   // text controller
   final TextEditingController _messageController = TextEditingController();
 
@@ -22,16 +27,61 @@ class ChatPage extends StatelessWidget {
   final ChatService _chatService = ChatService();
   final AuthService _authService = AuthService();
 
+  // for textfield focus
+  FocusNode myFocusNode = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+
+    // add listener to focus mode
+    myFocusNode.addListener(() {
+      if (myFocusNode.hasFocus) {
+        // cause a delay so that the keyboard has time to show up
+        // then the amount of remaining space will be calculated,
+        // then scroll down
+        Future.delayed(
+          const Duration(milliseconds: 500), // ✅ Исправлено
+          () => scrollDown(),
+        );
+      }
+    });
+
+    // wait a bit for listview to be built, then scroll to bottom
+    Future.delayed(
+      const Duration(milliseconds: 500),
+      () => scrollDown(),
+    );
+  }
+
+  @override
+  void dispose() {
+    myFocusNode.dispose();
+    _messageController.dispose();
+    super.dispose();
+  }
+
+  // scroll controller
+  final ScrollController _scrollController = ScrollController();
+  void scrollDown() {
+    _scrollController.animateTo(
+      _scrollController.position.maxScrollExtent,
+      duration: const Duration(seconds: 1),
+      curve: Curves.fastOutSlowIn,
+    );
+  }
+
   // send message
   void sendMessage() async {
-    // if there is something inside the textField
     if (_messageController.text.isNotEmpty) {
-      // send the message
-      await _chatService.sendMessage(receiverID, _messageController.text);
+      await _chatService.sendMessage(
+          widget.receiverID, _messageController.text);
 
-      // clear text controller
       _messageController.clear();
+      scrollDown(); // ✅ Теперь чат прокручивается вниз после отправки сообщения
     }
+
+    scrollDown();
   }
 
   @override
@@ -39,7 +89,7 @@ class ChatPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.background,
       appBar: AppBar(
-        title: Text(receiverEmail),
+        title: Text(widget.receiverEmail),
         backgroundColor: Colors.transparent,
         foregroundColor: Colors.grey,
         elevation: 0,
@@ -60,21 +110,19 @@ class ChatPage extends StatelessWidget {
 
   // build message list
   Widget _buildMessageList() {
-    String senderID = _authService.getCurrentUser()!.uid;
+    String senderID = _authService.getCurrentUser()?.uid ?? ""; // ✅ Исправлено
     return StreamBuilder(
-      stream: _chatService.getMessages(receiverID, senderID),
+      stream: _chatService.getMessages(widget.receiverID, senderID),
       builder: (context, snapshot) {
-        // erros
         if (snapshot.hasError) {
           return const Text("Error");
         }
-        // loading
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Text("Loading..");
         }
 
-        // return list view
         return ListView(
+          controller: _scrollController,
           children:
               snapshot.data!.docs.map((doc) => _buildMessageItem(doc)).toList(),
         );
@@ -86,9 +134,7 @@ class ChatPage extends StatelessWidget {
   Widget _buildMessageItem(DocumentSnapshot doc) {
     Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
 
-    // is current user
-    bool isCurrentUser = data['senderID'] == _authService.getCurrentUser()!.uid;
-    // align message to the right if sender is the current user, otherwise left
+    bool isCurrentUser = data['senderID'] == _authService.getCurrentUser()?.uid;
     var alignment =
         isCurrentUser ? Alignment.centerRight : Alignment.centerLeft;
 
@@ -113,18 +159,17 @@ class ChatPage extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 50.0),
       child: Row(
         children: [
-          // textfield should take up most of the space
           Expanded(
             child: MyTextField(
               controller: _messageController,
               hintText: "Type a message",
               obscureText: false,
+              focusNode: myFocusNode,
             ),
           ),
-          // send button
           Container(
             decoration: const BoxDecoration(
-              color: Colors.blue,
+              color: Color.fromARGB(255, 29, 223, 219),
               shape: BoxShape.circle,
             ),
             margin: const EdgeInsets.only(right: 25),
